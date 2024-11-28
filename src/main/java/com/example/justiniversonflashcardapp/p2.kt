@@ -26,21 +26,26 @@ interface IDeck {
     // The currently visible text (or null if exhausted)
     fun getText(): String?
 
-    // The number of question/answer pairs (does not change when questions are cycled to the end of the deck)
+    // The number of question/answer pairs
+    // (does not change when questions are cycled to the end of the deck)
     fun getSize(): Int
 
     // Shifts from question -> answer (if not QUESTION state, returns the same IDeck)
     fun flip(): IDeck
 
-    // Shifts from answer -> next question (or exhaustion); if the current question was correct it is discarded, otherwise cycled to the end of the deck (if not ANSWER state, returns the same IDeck)
+    // Shifts from answer -> next question (or exhaustion);
+    // if the current question was correct it is discarded,
+    // otherwise cycled to the end of the deck (if not ANSWER state, returns the same IDeck)
     fun next(correct: Boolean): IDeck
 
     // Get the name of the deck
     fun getDeckName(): String
 }
 
-// Takes in a list of tagged flashcards and a boolean which determines whether the flashcard is on the front utilizing the IDeck interface
-data class TFCListDeck(val name: String, val tfcList: List<TaggedFlashCard>, val isFront: Boolean) : IDeck {
+// Takes in a list of tagged flashcards and a boolean which determines whether the flashcard is
+// on the front utilizing the IDeck interface
+data class TFCListDeck(val name: String, val tfcList: List<TaggedFlashCard>, val isFront: Boolean)
+    : IDeck {
     // Checks if list is empty and if not checks boolean input and returns appropriate deck state
     override fun getState(): DeckState {
         return when {
@@ -50,7 +55,8 @@ data class TFCListDeck(val name: String, val tfcList: List<TaggedFlashCard>, val
         }
     }
 
-    // Checks if list is empty and returns null if empty, and if not checks boolean input and returns appropriate string
+    // Checks if list is empty and returns null if empty,
+    // and if not checks boolean input and returns appropriate string
     override fun getText(): String? {
         return if (tfcList.isEmpty()) null else if (isFront) tfcList.first().front else tfcList.first().back
     }
@@ -63,7 +69,8 @@ data class TFCListDeck(val name: String, val tfcList: List<TaggedFlashCard>, val
         return TFCListDeck(name, tfcList, !isFront)
     }
 
-    // Drops current card and returns next card; if user gets question wrong, adds flashcard to back of list
+    // Drops current card and returns next card; if user gets question wrong,
+    // adds flashcard to back of list
     override fun next(correct: Boolean): IDeck {
         return if (correct) {
             TFCListDeck(name, tfcList.drop(1), true)
@@ -77,4 +84,3 @@ data class TFCListDeck(val name: String, val tfcList: List<TaggedFlashCard>, val
     }
 }
 
-// You can add other deck types here following the same pattern as TFCListDeck.
