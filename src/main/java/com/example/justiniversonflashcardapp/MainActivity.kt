@@ -38,7 +38,8 @@ class MainActivity : ComponentActivity() {
             if (selectedDeck == null) {
                 DeckSelectionScreen(decks) { selectedDeck = it }
             } else {
-                SimpleFlashcards(deck = selectedDeck!!, returnToDeckSelection = { selectedDeck = null })
+                SimpleFlashcards(deck = selectedDeck!!,
+                    returnToDeckSelection = { selectedDeck = null })
             }
         }
     }
@@ -81,7 +82,9 @@ fun SimpleFlashcards(deck: IDeck, returnToDeckSelection: () -> Unit) {
 
         fun cardText(getFront: Boolean = false): String {
             return when {
-                topCard.getState() == DeckState.EXHAUSTED -> "You've reached the end of the deck.\nQuestions: ${deck.getSize()}, Attempts: $attempts"
+                topCard.getState() == DeckState.EXHAUSTED ->
+                    "You've reached the end of the deck.\n" +
+                            "Questions: ${deck.getSize()}, Attempts: $attempts"
                 topCard.getState() == DeckState.ANSWER && getFront -> front
                 else -> topCard.getText() ?: ""
             }
