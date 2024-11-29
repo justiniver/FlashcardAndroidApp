@@ -9,10 +9,12 @@ import org.junit.Assert.*
  *
  * See [testing documentation](http://d.android.com/tools/testing).
  */
-class ExampleUnitTest {
+class TestFlashcards {
     @Test
-    fun addition_isCorrect() {
-        // Dummy assert
-        assertEquals(4, 2 + 2)
+    fun testIsTagged() {
+        val flashcard = TaggedFlashCard("What is the capital of France?", "Paris", listOf("geography", "easy"))
+        assertTrue(flashcard.isTagged("geography"))
+        assertFalse(flashcard.isTagged("hard"))
     }
+
 }
