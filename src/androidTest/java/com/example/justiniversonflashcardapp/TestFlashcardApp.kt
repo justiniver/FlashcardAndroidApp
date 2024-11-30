@@ -14,10 +14,20 @@ import org.junit.Assert.*
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 @RunWith(AndroidJUnit4::class)
-class ExampleInstrumentedTest {
+class TestFlashcardApp {
     @Test
     fun useAppContext() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         assertEquals("com.example.justiniversonflashcardapp", appContext.packageName)
     }
+
+    @Test
+    fun testAppResources() {
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        val appName = appContext.getString(R.string.app_name)
+        assertEquals("Justin Iverson Flashcard App", appName)
+    }
+
+
+
 }
