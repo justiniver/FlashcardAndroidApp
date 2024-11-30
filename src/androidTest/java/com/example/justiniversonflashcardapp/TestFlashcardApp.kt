@@ -1,5 +1,10 @@
 package com.example.justiniversonflashcardapp
 
+import android.content.Intent
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 
@@ -28,6 +33,13 @@ class TestFlashcardApp {
         assertEquals("Justin Iverson Flashcard App", appName)
     }
 
-
+    @Test
+    fun testMainActivityLaunch() {
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        val intent = Intent(appContext, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        val activity = InstrumentationRegistry.getInstrumentation().startActivitySync(intent)
+        assertNotNull(activity)
+    }
 
 }
