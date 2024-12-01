@@ -7,10 +7,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,31 +67,41 @@ fun DeckSelectionScreen(decks: List<IDeck>, onDeckSelected: (IDeck) -> Unit) {
 @Composable
 fun SimpleFlashcards(deck: IDeck, returnToDeckSelection: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    var front by remember { mutableStateOf(deck.getText() ?: "") }
-    var attempts: Int by remember { mutableIntStateOf(0) }
-    var topCard: IDeck by remember { mutableStateOf(deck) }
+    var currentCard by remember { mutableStateOf(deck) }
+    var feedback by remember { mutableStateOf("") }
+    var attempts by remember { mutableStateOf(0) }
+
+    fun levenshteinDistance(a: String, b: String): Int {
+        val dp = Array(a.length + 1) { IntArray(b.length + 1) }
+        for (i in dp.indices) dp[i][0] = i
+        for (j in dp[0].indices) dp[0][j] = j
+
+        for (i in 1..a.length) {
+            for (j in 1..b.length) {
+                dp[i][j] = if (a[i - 1] == b[j - 1]) {
+                    dp[i - 1][j - 1]
+                } else {
+                    1 + minOf(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1])
+                }
+            }
+        }
+        return dp[a.length][b.length]
+    }
+
+    fun isAnswerCorrect(userInput: String, correctAnswer: String, threshold: Int = 2): Boolean {
+        val distance = levenshteinDistance(userInput.lowercase(), correctAnswer.lowercase())
+        return distance <= threshold
+    }
 
     @Composable
     fun SimpleCard() {
-        val textModifier = Modifier
-            .padding(vertical = 70.dp)
-            .fillMaxWidth()
+        val textModifier = Modifier.padding(vertical = 70.dp).fillMaxWidth()
 
-        fun cardText(getFront: Boolean = false): String {
-            return when {
-                topCard.getState() == DeckState.EXHAUSTED ->
-                    "You've reached the end of the deck.\n" +
-                            "Questions: ${deck.getSize()}, Attempts: $attempts"
-                topCard.getState() == DeckState.ANSWER && getFront -> front
-                else -> topCard.getText() ?: ""
-            }
-        }
-
-        fun onClickCard() {
-            if (topCard.getState() == DeckState.QUESTION) {
-                expanded = !expanded
-                front = cardText(true)
-                topCard = topCard.flip()
+        fun cardText(): String {
+            return when (currentCard.getState()) {
+                DeckState.EXHAUSTED -> "You've completed the deck! Total Attempts: $attempts"
+                DeckState.QUESTION -> currentCard.getText() ?: ""
+                DeckState.ANSWER -> feedback
             }
         }
 
@@ -102,61 +109,66 @@ fun SimpleFlashcards(deck: IDeck, returnToDeckSelection: () -> Unit) {
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onClickCard() }
+                .clickable { if (currentCard.getState() == DeckState.QUESTION) expanded = !expanded }
         ) {
             Column(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = cardText(true),
+                    text = cardText(),
                     textAlign = TextAlign.Center,
                     modifier = textModifier
                 )
-                AnimatedVisibility(visible = expanded) {
-                    Text(
-                        text = cardText(false),
-                        color = Color(0xFF09A129),
-                        textAlign = TextAlign.Center,
-                        modifier = textModifier
-                    )
-                }
             }
         }
     }
 
     @Composable
     fun FlashcardButtons() {
-        val buttonModifier = Modifier.padding(20.dp)
+        var userResponse by remember { mutableStateOf("") }
 
-        fun onClickNext(correct: Boolean) {
-            expanded = false
-            topCard = topCard.next(correct)
-            attempts++
-        }
-
-        Row(modifier = Modifier.padding(10.dp)) {
-            if (topCard.getState() == DeckState.EXHAUSTED) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (currentCard.getState() == DeckState.QUESTION) {
+                OutlinedTextField(
+                    value = userResponse,
+                    onValueChange = { userResponse = it },
+                    label = { Text("Your Answer") },
+                    modifier = Modifier.fillMaxWidth()
+                )
                 Button(
-                    onClick = { returnToDeckSelection() },
-                    modifier = buttonModifier
+                    onClick = {
+                        val correctAnswer = currentCard.flip().getText() ?: ""
+                        val isCorrect = isAnswerCorrect(userResponse.trim(), correctAnswer)
+                        feedback = if (isCorrect) {
+                            "Correct! The answer is $correctAnswer."
+                        } else {
+                            "Incorrect. The correct answer is $correctAnswer."
+                        }
+                        attempts++
+                    },
+                    modifier = Modifier.padding(top = 16.dp)
                 ) {
-                    Text(text = "Exit")
+                    Text("Submit")
                 }
             } else {
-                Button(
-                    enabled = topCard.getState() == DeckState.ANSWER,
-                    onClick = { onClickNext(false) },
-                    modifier = buttonModifier
-                ) {
-                    Text(text = "Incorrect")
-                }
-                Button(
-                    enabled = topCard.getState() == DeckState.ANSWER,
-                    onClick = { onClickNext(true) },
-                    modifier = buttonModifier
-                ) {
-                    Text(text = "Correct")
+                Row(modifier = Modifier.padding(10.dp)) {
+                    Button(
+                        onClick = {
+                            if (currentCard.getState() == DeckState.ANSWER) {
+                                currentCard = currentCard.next(feedback.contains("Correct"))
+                            }
+                            if (currentCard.getState() == DeckState.EXHAUSTED) {
+                                returnToDeckSelection()
+                            }
+                        },
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    ) {
+                        Text(if (currentCard.getState() == DeckState.EXHAUSTED) "Finish" else "Next")
+                    }
                 }
             }
         }
