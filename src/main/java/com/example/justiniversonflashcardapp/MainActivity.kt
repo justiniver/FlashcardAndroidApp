@@ -92,7 +92,8 @@ fun SimpleFlashcards(deck: IDeck, returnToDeckSelection: () -> Unit) {
 
     fun handleSubmitAnswer(userInput: String) {
         if (currentCard.getState() == DeckState.QUESTION) {
-            val correctAnswer = currentCard.flip().getText() ?: ""
+            currentCard = currentCard.flip()
+            val correctAnswer = currentCard.getText() ?: ""
             val isCorrect = isAnswerCorrect(userInput, correctAnswer)
             feedback = if (isCorrect) {
                 "Correct! The answer is $correctAnswer."
@@ -106,6 +107,7 @@ fun SimpleFlashcards(deck: IDeck, returnToDeckSelection: () -> Unit) {
     fun handleNextCard() {
         if (currentCard.getState() == DeckState.ANSWER) {
             currentCard = currentCard.next(feedback.contains("Correct"))
+            feedback = ""
         } else if (currentCard.getState() == DeckState.EXHAUSTED) {
             returnToDeckSelection()
         }
