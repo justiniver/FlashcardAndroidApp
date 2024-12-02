@@ -12,6 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
+/**
+ * Determines the Levenshtein distance between two strings.
+ */
 fun levenshteinDistance(a: String, b: String): Int {
     val dp = Array(a.length + 1) { IntArray(b.length + 1) }
     for (i in dp.indices) dp[i][0] = i
@@ -29,6 +32,9 @@ fun levenshteinDistance(a: String, b: String): Int {
     return dp[a.length][b.length]
 }
 
+/**
+ * Determines whether the user provided answer is correct enough.
+ */
 fun isAnswerCorrect(userInput: String, correctAnswer: String, threshold: Int = 2): Boolean {
     val distance = levenshteinDistance(userInput.lowercase(), correctAnswer.lowercase())
     return distance <= threshold
