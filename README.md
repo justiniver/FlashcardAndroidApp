@@ -1,6 +1,5 @@
 # Flashcard Learning Android App
-This project is a follow-up application to the previous flashcard projects, Flashcard1 and Flashcard2.
-It enhances the functionality by allowing users to create, view, and manage flashcards more effectively through an intuitive interface.
+This project is a follow-up application to some of my previous flashcard projects. It enhances the functionality by allowing users to choose and sift through flashcards more effectively through an intuitive interface.
 
 ## Demo Video
 
